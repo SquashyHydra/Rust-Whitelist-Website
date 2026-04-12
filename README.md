@@ -125,7 +125,7 @@ For production, also add your live domain and live callback URL.
 ## Local setup
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run prisma:generate
 npm run db:push
 npm run dev
@@ -147,7 +147,7 @@ Make sure your production `.env` is configured first, especially:
 Before starting the app, make sure the production database schema is applied:
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 npm run prisma:generate
 npm run db:push
 ```
