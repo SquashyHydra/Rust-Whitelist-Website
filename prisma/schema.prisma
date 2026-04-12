@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum SteamResolutionState {
+  PENDING
+  RESOLVED
+  UNRESOLVED
+  ERROR
+}
+
+enum NotificationState {
+  PENDING
+  SENT
+  SKIPPED
+  FAILED
+}
+
+enum AuditAction {
+  SUBMITTED
+  APPROVED
+  REJECTED
+  EMAIL_SENT
+  EMAIL_FAILED
+  RCON_SENT
+  RCON_FAILED
+}
+
+model WhitelistRequest {
+  id                     String               @id @default(cuid())
+  steamProfileUrl        String
+  steamProfileUrlNormalized String
+  steamVanityName        String?
+  steamId64              String?
+  steamPersonaName       String?
+  steamAvatarUrl         String?
+  steamResolutionState   SteamResolutionState @default(PENDING)
+  steamResolutionError   String?
+  applicantEmail         String?              @db.VarChar(255)
+  requestIpAddress       String?              @db.VarChar(64)
+  requestDevice          String?              @db.VarChar(255)
+  reason                 String               @db.Text
+  status                 RequestStatus        @default(PENDING)
+  emailDeliveryState     NotificationState    @default(PENDING)
+  emailDeliveryError     String?
+  emailNotifiedAt        DateTime?
+  applicantNotificationState NotificationState @default(PENDING)
+  applicantNotificationError String?
+  applicantNotifiedAt    DateTime?
+  applicantMessage       String?              @db.Text
+  reviewNote             String?              @db.Text
+  reviewedAt             DateTime?
+  reviewedByEmail        String?
+  rconCommand            String?
+  rconResult             String?
+  submittedAt            DateTime             @default(now())
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  auditLogs              AuditLog[]
+
+  @@index([status, submittedAt])
+  @@index([steamId64])
+  @@index([steamResolutionState])
+  @@index([applicantEmail, status])
+  @@index([applicantEmail, reviewedAt])
+}
+
+model AuditLog {
+  id          String           @id @default(cuid())
+  requestId   String
+  action      AuditAction
+  actorEmail  String?
+  details     String?          @db.Text
+  createdAt   DateTime         @default(now())
+  request     WhitelistRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId, createdAt])
+}
